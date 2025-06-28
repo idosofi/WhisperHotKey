@@ -13,12 +13,8 @@ struct WhisperHotkeyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Whisper", systemImage: "mic.fill") {
-            Button("Show Window") {
-                appDelegate.showMainWindow()
-            }
-            Button("Quit") { NSApp.terminate(nil) }
+        WindowGroup {
+            ContentView()
         }
-        .menuBarExtraStyle(.window)
     }
 }

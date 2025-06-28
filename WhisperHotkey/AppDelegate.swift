@@ -2,21 +2,21 @@ import Foundation
 import AppKit
 import SwiftUI
 import Cocoa
-
-import AppKit
-import SwiftUI
-import Cocoa
+import Combine
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var keyMonitor: KeyMonitor?
     var window: NSWindow?
+    var statusItem: NSStatusItem?
+    private var cancellables = Set<AnyCancellable>()
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         requestAccessibilityAndStartMonitor()
+        setupMenuBarItem()
         showMainWindow()
     }
     
-    func showMainWindow() {
+    @objc func showMainWindow() {
         if window == nil {
             let contentView = ContentView()
             let hostingController = NSHostingController(rootView: contentView)
@@ -48,6 +48,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             print("⚠️ Accessibility permission not granted.")
         }
     }
+    
+    private func setupMenuBarItem() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let button = statusItem?.button {
+            if let image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: nil) {
+                image.size = NSSize(width: 18, height: 18)
+                image.isTemplate = true
+                button.image = image
+                button.contentTintColor = .labelColor
+                print("DEBUG: Initial image template: \(image.isTemplate), size: \(image.size)")
+            }
+        }
+        
+        let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Show Window", action: #selector(showMainWindow), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        statusItem?.menu = menu
+        
+        Transcriber.shared.$isRecording
+            .sink { [weak self] isRecording in
+                if let button = self?.statusItem?.button {
+                    button.contentTintColor = isRecording ? .systemGreen : .labelColor
+                    print("DEBUG: isRecording: \(isRecording), contentTintColor: \(String(describing: button.contentTintColor))")
+                }
+            }
+            .store(in: &cancellables)
+    }
 }
 
 class KeyMonitor {
@@ -55,7 +83,7 @@ class KeyMonitor {
     private var monitor: Any?
     
     init() {
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             self?.handle(event: event)
         }
     }
@@ -66,6 +94,12 @@ class KeyMonitor {
         // Left Ctrl = 59, Right Ctrl = 62
         guard event.keyCode == 59 || event.keyCode == 62 else { return }
         
+        // We only want to handle the key-down event.
+        // When a modifier key is pressed, the corresponding flag is added to modifierFlags.
+        // When it's released, the flag is removed.
+        // So, we check if the .control flag is present.
+        guard event.modifierFlags.contains(.control) else { return }
+        
         let now = Date().timeIntervalSince1970
         ctrlTimestamps.append(now)
         
@@ -73,6 +107,7 @@ class KeyMonitor {
             ctrlTimestamps.removeFirst()
         }
         
+        // If the two last presses are less than 0.5s apart, it's a double-tap.
         if ctrlTimestamps.count == 2, ctrlTimestamps[1] - ctrlTimestamps[0] < 0.5 {
             print("⏹ Double Ctrl Detected")
             Transcriber.shared.toggleRecording()
