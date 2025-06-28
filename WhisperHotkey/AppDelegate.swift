@@ -68,10 +68,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.menu = menu
         
         Transcriber.shared.$isRecording
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] isRecording in
-                if let button = self?.statusItem?.button {
-                    button.contentTintColor = isRecording ? .systemGreen : .labelColor
-                    print("DEBUG: isRecording: \(isRecording), contentTintColor: \(String(describing: button.contentTintColor))")
+                guard let button = self?.statusItem?.button else { return }
+                
+                if let image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: nil) {
+                    image.size = NSSize(width: 18, height: 18)
+                    image.isTemplate = !isRecording  // 🟢 Use native macOS style when OFF
+                    button.image = image
+                    button.contentTintColor = isRecording ? .systemGreen : nil  // ✅ Green when ON, system-default when OFF
                 }
             }
             .store(in: &cancellables)
