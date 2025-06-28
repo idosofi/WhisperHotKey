@@ -9,6 +9,7 @@ class Transcriber: ObservableObject {
     
     @Published var transcript: String = ""
     @Published var isRecording: Bool = false
+    
     var selectedModel: ModelManager.ModelType {
         return modelManager.selectedModel
     }
@@ -120,7 +121,6 @@ class Transcriber: ObservableObject {
             try audioEngine!.start()
             await MainActor.run {
                 isRecording = true
-                transcript = "Recording... (Double Ctrl to stop)"
             }
         } catch {
             await MainActor.run {
@@ -171,7 +171,34 @@ class Transcriber: ObservableObject {
             self.transcript = fullTranscript
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(fullTranscript, forType: .string)
+            
+            if !fullTranscript.isEmpty {
+                simulatePaste()
+            }
         }
+    }
+    
+    private func simulatePaste() {
+        let source = CGEventSource(stateID: .hidSystemState)
+
+        // Command down
+        let cmdDown = CGEvent(keyboardEventSource: source, virtualKey: 0x37, keyDown: true)
+        cmdDown?.flags = .maskCommand
+        cmdDown?.post(tap: .cgAnnotatedSessionEventTap)
+
+        // V down
+        let vDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
+        vDown?.flags = .maskCommand
+        vDown?.post(tap: .cgAnnotatedSessionEventTap)
+
+        // V up
+        let vUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
+        vUp?.flags = .maskCommand
+        vUp?.post(tap: .cgAnnotatedSessionEventTap)
+
+        // Command up
+        let cmdUp = CGEvent(keyboardEventSource: source, virtualKey: 0x37, keyDown: false)
+        cmdUp?.post(tap: .cgAnnotatedSessionEventTap)
     }
     
     func listMicDevices() {
