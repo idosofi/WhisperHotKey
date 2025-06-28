@@ -16,7 +16,9 @@
 		B14BBD762E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD752E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift */; };
 		B14BBD832E0D7A6C0046E78C /* Transcriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD822E0D7A6C0046E78C /* Transcriber.swift */; };
 		B14BBD852E0D84B30046E78C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD842E0D84B30046E78C /* AppDelegate.swift */; };
-		B14BBD9C2E0FDCDA0046E78C /* WhisperFramework in Frameworks */ = {isa = PBXBuildFile; productRef = B14BBD9B2E0FDCDA0046E78C /* WhisperFramework */; };
+		B14BBD9E2E0FDCF00046E78C /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD9D2E0FDCF00046E78C /* ModelManager.swift */; };
+		B14BBDA02E0FDD000046E78C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD9F2E0FDD000046E78C /* SettingsView.swift */; };
+		B16D1E6C2E0FE82900E22A62 /* WhisperFramework in Frameworks */ = {isa = PBXBuildFile; productRef = B16D1E6B2E0FE82900E22A62 /* WhisperFramework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +52,8 @@
 		B14BBD752E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperHotkeyUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		B14BBD822E0D7A6C0046E78C /* Transcriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcriber.swift; sourceTree = "<group>"; };
 		B14BBD842E0D84B30046E78C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B14BBD9D2E0FDCF00046E78C /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
+		B14BBD9F2E0FDD000046E78C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B14BBD9C2E0FDCDA0046E78C /* WhisperFramework in Frameworks */,
+				B16D1E6C2E0FE82900E22A62 /* WhisperFramework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +108,8 @@
 				B14BBD572E0D79AE0046E78C /* WhisperHotkeyApp.swift */,
 				B14BBD592E0D79AE0046E78C /* ContentView.swift */,
 				B14BBD822E0D7A6C0046E78C /* Transcriber.swift */,
+				B14BBD9D2E0FDCF00046E78C /* ModelManager.swift */,
+				B14BBD9F2E0FDD000046E78C /* SettingsView.swift */,
 				B14BBD5B2E0D79AF0046E78C /* Assets.xcassets */,
 				B14BBD602E0D79AF0046E78C /* WhisperHotkey.entitlements */,
 				B14BBD5D2E0D79AF0046E78C /* Preview Content */,
@@ -154,7 +160,7 @@
 			);
 			name = WhisperHotkey;
 			packageProductDependencies = (
-				B14BBD9B2E0FDCDA0046E78C /* WhisperFramework */,
+				B16D1E6B2E0FE82900E22A62 /* WhisperFramework */,
 			);
 			productName = WhisperHotkey;
 			productReference = B14BBD542E0D79AE0046E78C /* WhisperHotkey.app */;
@@ -229,7 +235,7 @@
 			);
 			mainGroup = B14BBD4B2E0D79AE0046E78C;
 			packageReferences = (
-				B14BBD9A2E0FDCDA0046E78C /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */,
+				B16D1E6A2E0FE82900E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */,
 			);
 			productRefGroup = B14BBD552E0D79AE0046E78C /* Products */;
 			projectDirPath = "";
@@ -277,6 +283,8 @@
 				B14BBD5A2E0D79AE0046E78C /* ContentView.swift in Sources */,
 				B14BBD582E0D79AE0046E78C /* WhisperHotkeyApp.swift in Sources */,
 				B14BBD832E0D7A6C0046E78C /* Transcriber.swift in Sources */,
+				B14BBD9E2E0FDCF00046E78C /* ModelManager.swift in Sources */,
+				B14BBDA02E0FDD000046E78C /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -597,14 +605,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B14BBD9A2E0FDCDA0046E78C /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */ = {
+		B16D1E6A2E0FE82900E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = WhisperHotkey/WhisperFrameworkPackage;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B14BBD9B2E0FDCDA0046E78C /* WhisperFramework */ = {
+		B16D1E6B2E0FE82900E22A62 /* WhisperFramework */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WhisperFramework;
 		};

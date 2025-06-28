@@ -8,14 +8,27 @@
 import Foundation
 import SwiftUI
 import AVFoundation
+import Combine
 
 class Transcriber: ObservableObject {
     static let shared = Transcriber()
     
     @Published var transcript: String = ""
     @Published var isRecording: Bool = false
+    
     private var tempFile: URL?
     private var soxProcess: Process?
+    private var cancellables = Set<AnyCancellable>()
+    private var modelManager = ModelManager.shared
+    
+    init() {
+        modelManager.$selectedModel
+            .sink { [weak self] newModel in
+                // Handle model change if necessary, e.g., re-initialize whisper.cpp context
+                // For now, just update the model path in stopAndTranscribe
+            }
+            .store(in: &cancellables)
+    }
     
     func toggleRecording() {
         if isRecording {
@@ -27,7 +40,6 @@ class Transcriber: ObservableObject {
     
     func startRecording() async {
         AVCaptureDevice.requestAccess(for: .audio) { granted in
-            print("Mic access granted: \(granted)")
         }
         
         listMicDevices()
@@ -38,7 +50,6 @@ class Transcriber: ObservableObject {
             position: .unspecified
         )
         _ = session.devices.first
-        print("Mic devices: \(session.devices)")
 
         
         await MainActor.run {
@@ -55,12 +66,10 @@ class Transcriber: ObservableObject {
         soxProcess = task
         
         do {
-            print("Launching SoX: \(task.launchPath ?? "nil") \(task.arguments?.joined(separator: " ") ?? "")")
             try task.run()
         } catch {
             await MainActor.run {
                 isRecording = false
-                print("⚠️ Failed to start recording: \(error.localizedDescription)")
                 transcript = "⚠️ Failed to start recording: \(error.localizedDescription)"
             }
             soxProcess = nil
@@ -79,8 +88,11 @@ class Transcriber: ObservableObject {
         
         let task = Process()
         task.launchPath = "/opt/homebrew/bin/whisper-cpp"
+        
+        let modelPath = modelManager.modelsDirectory.appendingPathComponent(modelManager.selectedModel.rawValue).path
+        
         task.arguments = [
-            "--model", "\(NSHomeDirectory())/.whispercpp/models/ggml-small.en.bin",
+            "--model", modelPath,
             "--file", temp.path,
             "--output-txt"
         ]
@@ -110,7 +122,6 @@ class Transcriber: ObservableObject {
         )
         
         for device in session.devices {
-            print("🔊 Device: \(device.localizedName)")
         }
     }
 }

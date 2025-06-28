@@ -11,6 +11,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        _ = ModelManager.shared // Initialize ModelManager
         requestAccessibilityAndStartMonitor()
         setupMenuBarItem()
         showMainWindow()
@@ -33,10 +34,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func requestAccessibilityAndStartMonitor() {
-        // 🪵 Debug logs to verify running bundle info
-        print("🔍 Bundle ID: \(Bundle.main.bundleIdentifier ?? "nil")")
-        print("🔍 Executable path: \(Bundle.main.executablePath ?? "nil")")
-        
         let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
         
@@ -45,7 +42,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self.keyMonitor = KeyMonitor()
             }
         } else {
-            print("⚠️ Accessibility permission not granted.")
         }
     }
     
@@ -57,7 +53,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 image.isTemplate = true
                 button.image = image
                 button.contentTintColor = .labelColor
-                print("DEBUG: Initial image template: \(image.isTemplate), size: \(image.size)")
             }
         }
         
@@ -74,9 +69,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 
                 if let image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: nil) {
                     image.size = NSSize(width: 18, height: 18)
-                    image.isTemplate = !isRecording  // 🟢 Use native macOS style when OFF
+                    image.isTemplate = !isRecording
                     button.image = image
-                    button.contentTintColor = isRecording ? .systemGreen : nil  // ✅ Green when ON, system-default when OFF
+                    button.contentTintColor = isRecording ? .systemGreen : nil
                 }
             }
             .store(in: &cancellables)
@@ -99,8 +94,6 @@ class KeyMonitor {
     }
     
     private func handle(event: NSEvent) {
-        print("🟢 NSEvent received: keyCode=\(event.keyCode), flags=\(event.modifierFlags.rawValue)")
-        
         // Left Ctrl = 59, Right Ctrl = 62
         guard event.keyCode == 59 || event.keyCode == 62 else { return }
         
@@ -119,7 +112,6 @@ class KeyMonitor {
         
         // If the two last presses are less than 0.5s apart, it's a double-tap.
         if ctrlTimestamps.count == 2, ctrlTimestamps[1] - ctrlTimestamps[0] < 0.5 {
-            print("⏹ Double Ctrl Detected")
             Transcriber.shared.toggleRecording()
             ctrlTimestamps.removeAll()
         }
@@ -134,3 +126,4 @@ class KeyMonitor {
         }
     }
 }
+

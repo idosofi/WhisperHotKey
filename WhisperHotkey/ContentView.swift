@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var transcriber = Transcriber.shared
+    @State private var showingSettings = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -17,10 +18,22 @@ struct ContentView: View {
                     .padding()
             }
             Spacer()
-            Button(transcriber.isRecording ? "🛑 Stop Recording" : "🎤 Start Recording") {
-                transcriber.toggleRecording()
+            HStack {
+                Button(transcriber.isRecording ? "🛑 Stop Recording" : "🎤 Start Recording") {
+                    transcriber.toggleRecording()
+                }
+                .padding()
+                
+                Spacer()
+                
+                Button("Settings") {
+                    showingSettings.toggle()
+                }
+                .padding()
+                .sheet(isPresented: $showingSettings) {
+                    SettingsView()
+                }
             }
-            .padding()
         }
         .padding()
     }
