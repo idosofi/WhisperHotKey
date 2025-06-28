@@ -6,12 +6,19 @@
 //
 
 import SwiftUI
+import AppKit
 
 @main
 struct WhisperHotkeyApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        MenuBarExtra("Whisper", systemImage: "mic.fill") {
+            Button("Show Window") {
+                appDelegate.showMainWindow()
+            }
+            Button("Quit") { NSApp.terminate(nil) }
         }
+        .menuBarExtraStyle(.window)
     }
 }

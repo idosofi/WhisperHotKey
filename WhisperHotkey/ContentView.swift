@@ -8,17 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var transcriber = Transcriber.shared
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack(alignment: .leading) {
+            ScrollView {
+                Text(transcriber.transcript)
+                    .padding()
+            }
+            Spacer()
+            Button(transcriber.isRecording ? "🛑 Stop Recording" : "🎤 Start Recording") {
+                transcriber.toggleRecording()
+            }
+            .padding()
         }
         .padding()
     }
-}
-
-#Preview {
-    ContentView()
 }
