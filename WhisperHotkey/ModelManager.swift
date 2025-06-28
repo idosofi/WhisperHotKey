@@ -29,6 +29,10 @@ class ModelManager: ObservableObject {
     @Published var selectedModel: ModelType {
         didSet {
             UserDefaults.standard.set(selectedModel.rawValue, forKey: "selectedModel")
+            // Clear transcriber transcript when a valid model is selected
+            if modelIsDownloaded(selectedModel) {
+                Transcriber.shared.transcript = ""
+            }
         }
     }
 
