@@ -111,6 +111,32 @@ class ModelManager: ObservableObject {
         task.resume()
     }
 
+    func deleteModel(_ modelType: ModelType) {
+        let fileManager = FileManager.default
+        let modelPath = modelsDirectory.appendingPathComponent(modelType.rawValue)
+
+        do {
+            if fileManager.fileExists(atPath: modelPath.path) {
+                try fileManager.removeItem(at: modelPath)
+                DispatchQueue.main.async {
+                    self.setupAvailableModels() // Re-setup to update downloaded status and sizes
+                    self.updateDownloadedModels()
+                    if self.selectedModel == modelType {
+                        // If the deleted model was the selected one, try to select another downloaded model
+                        if let firstDownloaded = self.downloadedModels.first {
+                            self.selectedModel = firstDownloaded.type
+                        } else {
+                            // Fallback to a default if no models are downloaded
+                            self.selectedModel = .base_en
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("Error deleting model \(modelType.rawValue): \(error.localizedDescription)")
+        }
+    }
+
     private func fetchFileSizes() {
         for i in 0..<availableModels.count {
             let modelType = availableModels[i].type

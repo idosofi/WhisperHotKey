@@ -25,6 +25,12 @@ struct SettingsView: View {
                     if modelInfo.isDownloaded {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
+                        Button(action: { modelManager.deleteModel(modelInfo.type) }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(modelManager.selectedModel == modelInfo.type)
                     } else if modelManager.downloadProgress > 0 && modelManager.downloadProgress < 1 && modelManager.selectedModel == modelInfo.type {
                         ProgressView(value: modelManager.downloadProgress)
                             .frame(width: 50, height: 20) // Adjust size as needed
