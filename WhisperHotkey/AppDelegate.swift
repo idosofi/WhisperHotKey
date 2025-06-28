@@ -85,11 +85,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 class KeyMonitor {
     private var ctrlTimestamps: [TimeInterval] = []
-    private var monitor: Any?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
     
     init() {
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged, .keyDown]) { [weak self] event in
             self?.handle(event: event)
+        }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.flagsChanged, .keyDown]) { [weak self] event in
+            self?.handle(event: event)
+            return event
         }
     }
     
@@ -121,8 +126,11 @@ class KeyMonitor {
     }
     
     deinit {
-        if let monitor = monitor {
-            NSEvent.removeMonitor(monitor)
+        if let globalMonitor = globalMonitor {
+            NSEvent.removeMonitor(globalMonitor)
+        }
+        if let localMonitor = localMonitor {
+            NSEvent.removeMonitor(localMonitor)
         }
     }
 }
