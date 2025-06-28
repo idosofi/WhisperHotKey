@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -16,6 +16,7 @@
 		B14BBD762E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD752E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift */; };
 		B14BBD832E0D7A6C0046E78C /* Transcriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD822E0D7A6C0046E78C /* Transcriber.swift */; };
 		B14BBD852E0D84B30046E78C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD842E0D84B30046E78C /* AppDelegate.swift */; };
+		B14BBD9C2E0FDCDA0046E78C /* WhisperFramework in Frameworks */ = {isa = PBXBuildFile; productRef = B14BBD9B2E0FDCDA0046E78C /* WhisperFramework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B14BBD9C2E0FDCDA0046E78C /* WhisperFramework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,6 +153,9 @@
 			dependencies = (
 			);
 			name = WhisperHotkey;
+			packageProductDependencies = (
+				B14BBD9B2E0FDCDA0046E78C /* WhisperFramework */,
+			);
 			productName = WhisperHotkey;
 			productReference = B14BBD542E0D79AE0046E78C /* WhisperHotkey.app */;
 			productType = "com.apple.product-type.application";
@@ -223,6 +228,9 @@
 				Base,
 			);
 			mainGroup = B14BBD4B2E0D79AE0046E78C;
+			packageReferences = (
+				B14BBD9A2E0FDCDA0046E78C /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */,
+			);
 			productRefGroup = B14BBD552E0D79AE0046E78C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -587,6 +595,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		B14BBD9A2E0FDCDA0046E78C /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = WhisperHotkey/WhisperFrameworkPackage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B14BBD9B2E0FDCDA0046E78C /* WhisperFramework */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WhisperFramework;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B14BBD4C2E0D79AE0046E78C /* Project object */;
 }
