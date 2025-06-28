@@ -150,7 +150,8 @@ class Transcriber: ObservableObject {
             return
         }
         
-        let params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
+        var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
+        params.language = ("en" as NSString).utf8String // Set language to English
         
         // You might need to set other parameters based on your needs
         // params.print_realtime = true;
@@ -158,7 +159,6 @@ class Transcriber: ObservableObject {
         // params.print_timestamps = true;
         // params.print_special = false;
         // params.translate = false;
-        // params.language = "en";
         // params.n_threads = 6;
         // params.offset_ms = 0;
         // params.duration_ms = 0;
@@ -166,19 +166,21 @@ class Transcriber: ObservableObject {
         // Pass the accumulated audio data to whisper_full
         whisper_full(context, params, audioBuffer, Int32(audioBuffer.count))
         
-        let fullTranscript = (0..<whisper_full_n_segments(context)).compactMap { i in
-            if let cText = whisper_full_get_segment_text(context, i) {
+        let rawTranscript = (0..<whisper_full_n_segments(context)).compactMap { i in
+            if let cText = whisper_full_get_segment_text(context, Int32(i)) {
                 return String(cString: cText)
             }
             return nil
         }.joined().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        await MainActor.run {
-            self.transcript = fullTranscript
+        let finalTranscript = isNonSpeech(transcript: rawTranscript) ? "" : rawTranscript
+        
+        await MainActor.run { [self, finalTranscript] in
+            self.transcript = finalTranscript
             NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(fullTranscript, forType: .string)
+            NSPasteboard.general.setString(finalTranscript, forType: .string)
             
-            if !fullTranscript.isEmpty {
+            if !finalTranscript.isEmpty {
                 simulatePaste()
             }
         }
@@ -217,6 +219,34 @@ class Transcriber: ObservableObject {
         for _ in session.devices {
             // No logging here as per previous instruction
         }
+    }
+    
+    private func isNonSpeech(transcript: String) -> Bool {
+        let trimmedTranscript = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Common patterns for non-speech in Whisper output
+        let nonSpeechPatterns = [
+            "^\\[.*\\]$", // [something]
+            "^\\(.*?\\)$", // (something)
+            "♪",         // Music note
+            "chimes",
+            "chuckling",
+            "silence",
+            "BLANK_AUDIO"
+        ]
+        
+        for pattern in nonSpeechPatterns {
+            if trimmedTranscript.range(of: pattern, options: .regularExpression) != nil {
+                return true
+            }
+        }
+        
+        // Consider very short transcripts as potential non-speech artifacts if they don't contain alphanumeric characters
+        if trimmedTranscript.count < 3 && trimmedTranscript.rangeOfCharacter(from: .alphanumerics) == nil {
+                return true
+            }
+        
+        return false
     }
     
     deinit {
