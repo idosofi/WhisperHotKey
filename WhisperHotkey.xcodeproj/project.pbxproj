@@ -16,6 +16,10 @@
 		B14BBD762E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD752E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift */; };
 		B14BBD832E0D7A6C0046E78C /* Transcriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD822E0D7A6C0046E78C /* Transcriber.swift */; };
 		B14BBD852E0D84B30046E78C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD842E0D84B30046E78C /* AppDelegate.swift */; };
+		B14BBD8B2E0FBFE30046E78C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD8A2E0FBFE30046E78C /* SettingsView.swift */; };
+		B14BBD8D2E0FBFE90046E78C /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD8C2E0FBFE90046E78C /* ModelManager.swift */; };
+		B14BBD962E0FC47F0046E78C /* whisper.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B14BBD952E0FC47F0046E78C /* whisper.xcframework */; };
+		B14BBD972E0FC47F0046E78C /* whisper.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B14BBD952E0FC47F0046E78C /* whisper.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +39,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		B14BBD942E0FC47F0046E78C /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				B14BBD972E0FC47F0046E78C /* whisper.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		B14BBD542E0D79AE0046E78C /* WhisperHotkey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhisperHotkey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B14BBD572E0D79AE0046E78C /* WhisperHotkeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperHotkeyApp.swift; sourceTree = "<group>"; };
@@ -49,6 +67,9 @@
 		B14BBD752E0D79B00046E78C /* WhisperHotkeyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperHotkeyUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		B14BBD822E0D7A6C0046E78C /* Transcriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcriber.swift; sourceTree = "<group>"; };
 		B14BBD842E0D84B30046E78C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B14BBD8A2E0FBFE30046E78C /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B14BBD8C2E0FBFE90046E78C /* ModelManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
+		B14BBD952E0FC47F0046E78C /* whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = whisper.xcframework; path = WhisperHotkey/whisper.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B14BBD962E0FC47F0046E78C /* whisper.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,10 +124,13 @@
 				B14BBD572E0D79AE0046E78C /* WhisperHotkeyApp.swift */,
 				B14BBD592E0D79AE0046E78C /* ContentView.swift */,
 				B14BBD822E0D7A6C0046E78C /* Transcriber.swift */,
+				B14BBD8A2E0FBFE30046E78C /* SettingsView.swift */,
+				B14BBD8C2E0FBFE90046E78C /* ModelManager.swift */,
 				B14BBD5B2E0D79AF0046E78C /* Assets.xcassets */,
 				B14BBD602E0D79AF0046E78C /* WhisperHotkey.entitlements */,
 				B14BBD5D2E0D79AF0046E78C /* Preview Content */,
 				B14BBD842E0D84B30046E78C /* AppDelegate.swift */,
+				B14BBD952E0FC47F0046E78C /* whisper.xcframework */,
 			);
 			path = WhisperHotkey;
 			sourceTree = "<group>";
@@ -145,6 +170,7 @@
 				B14BBD502E0D79AE0046E78C /* Sources */,
 				B14BBD512E0D79AE0046E78C /* Frameworks */,
 				B14BBD522E0D79AE0046E78C /* Resources */,
+				B14BBD942E0FC47F0046E78C /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -265,10 +291,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B14BBD8B2E0FBFE30046E78C /* SettingsView.swift in Sources */,
 				B14BBD852E0D84B30046E78C /* AppDelegate.swift in Sources */,
 				B14BBD5A2E0D79AE0046E78C /* ContentView.swift in Sources */,
 				B14BBD582E0D79AE0046E78C /* WhisperHotkeyApp.swift in Sources */,
 				B14BBD832E0D7A6C0046E78C /* Transcriber.swift in Sources */,
+				B14BBD8D2E0FBFE90046E78C /* ModelManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,9 +461,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"WhisperHotkey/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = ""WhisperHotkey/Preview Content"";
 				DEVELOPMENT_TEAM = RP495WH4Z9;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/WhisperHotkey",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses your microphone to transcribe speech.";
@@ -461,9 +493,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"WhisperHotkey/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = ""WhisperHotkey/Preview Content"";
 				DEVELOPMENT_TEAM = RP495WH4Z9;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/WhisperHotkey",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses your microphone to transcribe speech.";
@@ -590,3 +626,4 @@
 	};
 	rootObject = B14BBD4C2E0D79AE0046E78C /* Project object */;
 }
+
