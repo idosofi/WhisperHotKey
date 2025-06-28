@@ -11,19 +11,29 @@ import AppKit
 @main
 struct WhisperHotkeyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @State private var showingSettingsOnLaunch = false
+    @State private var isShowingSettingsSheet = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .onAppear {
-                    if ModelManager.shared.downloadedModels.isEmpty {
-                        showingSettingsOnLaunch = true
-                    }
+            ZStack {
+                if ModelManager.shared.modelIsDownloaded(ModelManager.shared.selectedModel) {
+                    ContentView()
+                } else {
+                    Text("Please select and download a model in Settings.")
+                        .font(.title2)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .onAppear { isShowingSettingsSheet = true }
                 }
-                .sheet(isPresented: $showingSettingsOnLaunch) {
-                    SettingsView()
-                }
+            }
+            .sheet(isPresented: $isShowingSettingsSheet) {
+                SettingsView()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showSettings)) { _ in
+                isShowingSettingsSheet = true
+            }
         }
     }
 }
+
+

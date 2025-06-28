@@ -2,41 +2,47 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var modelManager = ModelManager.shared
-    @StateObject private var transcriber = Transcriber.shared
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack {
             Text("Model Management")
                 .font(.title)
 
-            Picker("Selected Model", selection: $transcriber.selectedModel) {
-                ForEach(modelManager.availableModels) { model in
-                    Text(model.rawValue)
-                        .tag(model)
+            Picker("Selected Model", selection: $modelManager.selectedModel) {
+                ForEach(modelManager.availableModels) { modelInfo in
+                    Text("\(modelInfo.type.rawValue) \(modelInfo.fileSize ?? "")")
+                        .tag(modelInfo.type)
                 }
             }
             .pickerStyle(.menu)
             .padding()
 
-            List(modelManager.availableModels) { model in
+            List(modelManager.availableModels) { modelInfo in
                 HStack {
-                    Text(model.rawValue)
+                    Text("\(modelInfo.type.rawValue) \(modelInfo.fileSize ?? "")")
                     Spacer()
-                    if modelManager.downloadedModels.contains(model) {
+                    if modelInfo.isDownloaded {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
+                    } else if modelManager.downloadProgress > 0 && modelManager.downloadProgress < 1 && modelManager.selectedModel == modelInfo.type {
+                        ProgressView(value: modelManager.downloadProgress)
+                            .frame(width: 50, height: 20) // Adjust size as needed
+                        Text("\(Int(modelManager.downloadProgress * 100))%")
                     } else {
-                        Button(action: { modelManager.downloadModel(model) }) {
+                        Button(action: { modelManager.downloadModel(modelInfo) }) {
                             Image(systemName: "icloud.and.arrow.down")
                         }
                     }
                 }
             }
 
-            if modelManager.downloadProgress > 0 && modelManager.downloadProgress < 1 {
-                ProgressView(value: modelManager.downloadProgress)
+            Button("Done") {
+                dismiss()
             }
+            .disabled(!modelManager.modelIsDownloaded(modelManager.selectedModel))
         }
         .padding()
+        .frame(minWidth: 400, minHeight: 300) // Set minimum size for the window
     }
 }

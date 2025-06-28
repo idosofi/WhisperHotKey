@@ -4,9 +4,12 @@ import SwiftUI
 import Cocoa
 import Combine
 
+extension Notification.Name {
+    static let showSettings = Notification.Name("showSettings")
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     var keyMonitor: KeyMonitor?
-    var window: NSWindow?
     var statusItem: NSStatusItem?
     private var cancellables = Set<AnyCancellable>()
     
@@ -14,23 +17,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         _ = ModelManager.shared // Initialize ModelManager
         requestAccessibilityAndStartMonitor()
         setupMenuBarItem()
-        showMainWindow()
-    }
-    
-    @objc func showMainWindow() {
-        if window == nil {
-            let contentView = ContentView()
-            let hostingController = NSHostingController(rootView: contentView)
-            let window = NSWindow(contentViewController: hostingController)
-            window.title = "Whisper Dictation"
-            window.setContentSize(NSSize(width: 420, height: 300))
-            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
-            window.center()
-            window.isReleasedWhenClosed = false
-            self.window = window
-        }
-        window?.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
     }
     
     private func requestAccessibilityAndStartMonitor() {
@@ -57,7 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Show Window", action: #selector(showMainWindow), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Settings", action: #selector(showSettingsWindow), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem?.menu = menu
@@ -75,6 +61,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
             .store(in: &cancellables)
+    }
+    
+    @objc func showSettingsWindow() {
+        NotificationCenter.default.post(name: .showSettings, object: nil)
     }
 }
 
