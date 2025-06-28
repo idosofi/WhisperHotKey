@@ -165,7 +165,7 @@ class Transcriber: ObservableObject {
                 return String(cString: cText)
             }
             return nil
-        }.joined()
+        }.joined().trimmingCharacters(in: .whitespacesAndNewlines)
         
         await MainActor.run {
             self.transcript = fullTranscript
