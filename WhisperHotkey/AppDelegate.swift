@@ -9,25 +9,66 @@ extension Notification.Name {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private var hasShownAccessibilityAlert = false
     var keyMonitor: KeyMonitor?
     var statusItem: NSStatusItem?
     private var cancellables = Set<AnyCancellable>()
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = ModelManager.shared // Initialize ModelManager
-        requestAccessibilityAndStartMonitor()
         setupMenuBarItem()
+        
+        
     }
     
-    private func requestAccessibilityAndStartMonitor() {
-        let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
-        let trusted = AXIsProcessTrustedWithOptions(options)
+    private func checkAccessibilityAndSetupMonitor() {
+        let trusted = AXIsProcessTrusted()
         
         if trusted {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.keyMonitor = KeyMonitor()
+            // If trusted, set up the key monitor
+            if keyMonitor == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.keyMonitor = KeyMonitor()
+                }
             }
         } else {
+            // If not trusted, show the alert only once per session
+            if !hasShownAccessibilityAlert {
+                showAccessibilityAlert()
+                hasShownAccessibilityAlert = true
+            }
+        }
+    }
+    
+    private func showAccessibilityAlert() {
+        let alert = NSAlert()
+        alert.messageText = "Accessibility Access Required"
+        alert.informativeText = "WhisperHotkey needs accessibility access to monitor keyboard shortcuts. Please enable it in System Settings."
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Quit")
+        
+        let response = alert.runModal()
+        
+        if response == .alertFirstButtonReturn {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
+            // Do not terminate the app. User will grant permission and return.
+        } else {
+            NSApp.terminate(nil)
+        }
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+        // Re-check accessibility status when the app becomes active
+        // Only call checkAccessibilityAndSetupMonitor if keyMonitor is not yet set up
+        if keyMonitor == nil {
+            checkAccessibilityAndSetupMonitor()
+        }
+        
+        // Show settings window if no model is selected on app activation
+        if !ModelManager.shared.modelIsDownloaded(ModelManager.shared.selectedModel) {
+            NotificationCenter.default.post(name: .showSettings, object: nil)
         }
     }
     
