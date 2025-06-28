@@ -3,6 +3,7 @@ import SwiftUI
 import AVFoundation
 import Combine
 import whisper // Import the whisper framework
+import AppKit // For NSSound
 
 class Transcriber: ObservableObject {
     static let shared = Transcriber()
@@ -19,6 +20,9 @@ class Transcriber: ObservableObject {
     private var whisperContext: OpaquePointer?
     private var cancellables = Set<AnyCancellable>()
     private var modelManager = ModelManager.shared
+    
+    private let startSound = NSSound(named: "Funk")
+    private let stopSound = NSSound(named: "Pop")
     
     init() {
         // Load the initial selected model
@@ -121,6 +125,7 @@ class Transcriber: ObservableObject {
             try audioEngine!.start()
             await MainActor.run {
                 isRecording = true
+                startSound?.play()
             }
         } catch {
             await MainActor.run {
@@ -132,6 +137,7 @@ class Transcriber: ObservableObject {
     
     func stopAndTranscribe() async {
         await MainActor.run { isRecording = false }
+        stopSound?.play()
         
         audioEngine?.stop()
         audioEngine?.inputNode.removeTap(onBus: 0)
