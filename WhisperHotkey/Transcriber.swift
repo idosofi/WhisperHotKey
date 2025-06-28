@@ -8,17 +8,14 @@
 import Foundation
 import SwiftUI
 import AVFoundation
-import Whisper
 
 class Transcriber: ObservableObject {
     static let shared = Transcriber()
     
     @Published var transcript: String = ""
     @Published var isRecording: Bool = false
-    
-    private var audioEngine: AVAudioEngine!
-    private var audioFile: AVAudioFile!
-    private var whisperContext: WhisperContext?
+    private var tempFile: URL?
+    private var soxProcess: Process?
     
     func toggleRecording() {
         if isRecording {
@@ -29,104 +26,91 @@ class Transcriber: ObservableObject {
     }
     
     func startRecording() async {
+        AVCaptureDevice.requestAccess(for: .audio) { granted in
+            print("Mic access granted: \(granted)")
+        }
+        
+        listMicDevices()
+        // 👇 Trigger macOS microphone permission prompt if not already granted
+        let session = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.microphone],
+            mediaType: .audio,
+            position: .unspecified
+        )
+        _ = session.devices.first
+        print("Mic devices: \(session.devices)")
+
+        
         await MainActor.run {
             isRecording = true
             transcript = "Recording... (Double Ctrl to stop)"
         }
-
-        let audioSession = AVAudioSession.sharedInstance()
+        
+        let temp = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("input.wav")
+        tempFile = temp
+        
+        let task = Process()
+        task.launchPath = "/opt/homebrew/bin/sox"
+        task.arguments = ["-t", "coreaudio", "default", "-c", "1", "-r", "16000", "-b", "16", temp.path]
+        soxProcess = task
+        
         do {
-            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            print("Launching SoX: \(task.launchPath ?? "nil") \(task.arguments?.joined(separator: " ") ?? "")")
+            try task.run()
         } catch {
             await MainActor.run {
                 isRecording = false
-                transcript = "⚠️ Failed to set up audio session: \(error.localizedDescription)"
+                print("⚠️ Failed to start recording: \(error.localizedDescription)")
+                transcript = "⚠️ Failed to start recording: \(error.localizedDescription)"
             }
-            return
-        }
-
-        audioEngine = AVAudioEngine()
-        let inputNode = audioEngine.inputNode
-
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
-        let tempDir = FileManager.default.temporaryDirectory
-        let tempWavFile = tempDir.appendingPathComponent(UUID().uuidString).appendingPathExtension("wav")
-
-        do {
-            audioFile = try AVAudioFile(forWriting: tempWavFile, settings: recordingFormat.settings)
-        } catch {
-            await MainActor.run {
-                isRecording = false
-                transcript = "⚠️ Failed to create audio file: \(error.localizedDescription)"
-            }
-            return
-        }
-
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] (buffer, time) in
-            guard let self = self else { return }
-            do {
-                try self.audioFile.write(from: buffer)
-            } catch {
-                // Handle error writing to file
-            }
-        }
-
-        audioEngine.prepare()
-        do {
-            try audioEngine.start()
-        } catch {
-            await MainActor.run {
-                isRecording = false
-                transcript = "⚠️ Failed to start audio engine: \(error.localizedDescription)"
-            }
+            soxProcess = nil
         }
     }
     
     func stopAndTranscribe() async {
         await MainActor.run { isRecording = false }
-
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
         
-        guard let audioFile = audioFile else { return }
-        let audioFilePath = audioFile.url
-        self.audioFile = nil // Release the file handle
-
-        let modelManager = ModelManager.shared
-        guard let selectedModelId = modelManager.selectedModelId,
-              let selectedModel = modelManager.availableModels.first(where: { $0.id == selectedModelId }) else {
-            await MainActor.run {
-                self.transcript = "⚠️ No Whisper model selected or available. Please go to settings to download one."
-            }
-            return
+        if let process = soxProcess, process.isRunning {
+            process.terminate()
         }
-        let modelPath = modelManager.modelPath(for: selectedModel).path
-
-        do {
-            whisperContext = try WhisperContext.createContext(path: modelPath)
-            let data = try Data(contentsOf: audioFilePath)
-            let floats = data.withUnsafeBytes { (buffer: UnsafeRawBufferPointer) -> [Float] in
-                Array(UnsafeBufferPointer(start: buffer.baseAddress!.assumingMemoryBound(to: Float.self), count: buffer.count / MemoryLayout<Float>.size))
-            }
-
-            try await whisperContext?.fullTranscribe(audio: floats)
-            let text = (0..<whisperContext!.fullNSegments()).map { whisperContext!.fullText(segment: $0) }.joined(separator: " ")
-
+        soxProcess = nil
+        
+        guard let temp = tempFile else { return }
+        
+        let task = Process()
+        task.launchPath = "/opt/homebrew/bin/whisper-cpp"
+        task.arguments = [
+            "--model", "\(NSHomeDirectory())/.whispercpp/models/ggml-small.en.bin",
+            "--file", temp.path,
+            "--output-txt"
+        ]
+        
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = pipe
+        
+        try? task.run()
+        task.waitUntilExit()
+        
+        let outputPath = temp.appendingPathExtension("txt")
+        if let contents = try? String(contentsOf: outputPath) {
             await MainActor.run {
-                self.transcript = text
+                self.transcript = contents
                 NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(text, forType: .string)
-            }
-        } catch {
-            await MainActor.run {
-                self.transcript = "⚠️ Transcription failed: \(error.localizedDescription)"
+                NSPasteboard.general.setString(contents, forType: .string)
             }
         }
-
-        // Clean up temporary audio file
-        try? FileManager.default.removeItem(at: audioFilePath)
     }
     
-    
+    func listMicDevices() {
+        let session = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.microphone, .external],
+            mediaType: .audio,
+            position: .unspecified
+        )
+        
+        for device in session.devices {
+            print("🔊 Device: \(device.localizedName)")
+        }
+    }
 }
