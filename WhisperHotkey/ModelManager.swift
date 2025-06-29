@@ -162,7 +162,7 @@ extension ModelManager: URLSessionDownloadDelegate, URLSessionTaskDelegate {
             if now - self.lastProgressUpdateTime > 0.1 || progress == 1.0 {
                 DispatchQueue.main.async {
                     self.downloadProgress = progress
-                    print("Download Progress for \(downloadTask.taskDescription ?? "unknown"): \(progress)")
+                    
                 }
                 self.lastProgressUpdateTime = now
             }
