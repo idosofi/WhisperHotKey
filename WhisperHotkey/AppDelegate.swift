@@ -84,7 +84,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Settings", action: #selector(showSettingsWindow), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: "Show Window", action: #selector(showMainWindow), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem?.menu = menu
@@ -104,8 +104,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .store(in: &cancellables)
     }
     
-    @objc func showSettingsWindow() {
-        NotificationCenter.default.post(name: .showSettings, object: nil)
+    @objc func showMainWindow() {
+        if let window = NSApp.windows.first(where: { $0.title != "" }) {
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+            if window.isMiniaturized {
+                window.deminiaturize(nil)
+            }
+        }
     }
 }
 
