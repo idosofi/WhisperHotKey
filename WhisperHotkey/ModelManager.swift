@@ -1,6 +1,6 @@
 import Foundation
 
-class ModelManager: ObservableObject {
+class ModelManager: NSObject, ObservableObject {
     static let shared = ModelManager()
 
     enum ModelType: String, CaseIterable, Identifiable {
@@ -25,6 +25,7 @@ class ModelManager: ObservableObject {
     @Published var availableModels: [ModelInfo] = []
     @Published var downloadedModels: [ModelInfo] = []
     @Published var downloadProgress: Double = 0
+    @Published var downloadingModel: ModelType? = nil // New property to track the downloading model
     private var lastProgressUpdateTime: TimeInterval = 0
     @Published var selectedModel: ModelType {
         didSet {
@@ -41,14 +42,19 @@ class ModelManager: ObservableObject {
         return documents.appendingPathComponent("whisper_models")
     }
 
-    private init() {
-        // Initialize _selectedModel first
+    private var urlSession: URLSession!
+
+    private override init() {
+        let initialSelectedModel: ModelType
         if let savedModelRawValue = UserDefaults.standard.string(forKey: "selectedModel"),
            let savedModel = ModelType(rawValue: savedModelRawValue) {
-            _selectedModel = Published(initialValue: savedModel)
+            initialSelectedModel = savedModel
         } else {
-            _selectedModel = Published(initialValue: .base_en) // Default fallback
+            initialSelectedModel = .base_en // Default fallback
         }
+        _selectedModel = Published(initialValue: initialSelectedModel) // Initialize backing property before super.init()
+
+        super.init() // Call super.init()
 
         createModelsDirectoryIfNeeded()
         setupAvailableModels()
@@ -60,6 +66,9 @@ class ModelManager: ObservableObject {
                 selectedModel = firstDownloaded.type
             }
         }
+        
+        let config = URLSessionConfiguration.default
+        urlSession = URLSession(configuration: config, delegate: self, delegateQueue: nil)
     }
 
     private func createModelsDirectoryIfNeeded() {
@@ -88,31 +97,13 @@ class ModelManager: ObservableObject {
 
     func downloadModel(_ modelInfo: ModelInfo) {
         let url = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/\(modelInfo.type.rawValue)")!
-        let task = URLSession.shared.downloadTask(with: url) { [weak self] tempURL, response, error in
-            guard let self = self, let tempURL = tempURL, error == nil else {
-                return
-            }
-
-            let destinationURL = self.modelsDirectory.appendingPathComponent(modelInfo.type.rawValue)
-            try? FileManager.default.moveItem(at: tempURL, to: destinationURL)
-
-            DispatchQueue.main.async {
-                self.setupAvailableModels() // Re-setup to update downloaded status and sizes
-                self.selectedModel = modelInfo.type // Set as selected after download
-            }
-        }
-
-        _ = task.progress.observe(\.fractionCompleted) { progress, _ in
-            let now = Date().timeIntervalSince1970
-            if now - self.lastProgressUpdateTime > 0.1 || progress.fractionCompleted == 1.0 { // Update every 0.1 seconds or when complete
-                DispatchQueue.main.async {
-                    self.downloadProgress = progress.fractionCompleted
-                }
-                self.lastProgressUpdateTime = now
-            }
-        }
-
+        let task = urlSession.downloadTask(with: url)
+        task.taskDescription = modelInfo.type.rawValue // Use taskDescription to identify the model in delegate methods
         task.resume()
+        
+        DispatchQueue.main.async {
+            self.downloadingModel = modelInfo.type // Set the model being downloaded
+        }
     }
 
     func deleteModel(_ modelType: ModelType) {
@@ -159,6 +150,62 @@ class ModelManager: ObservableObject {
                 }
             }
             task.resume()
+        }
+    }
+}
+
+extension ModelManager: URLSessionDownloadDelegate, URLSessionTaskDelegate {
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+        if totalBytesExpectedToWrite > 0 {
+            let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+            let now = Date().timeIntervalSince1970
+            if now - self.lastProgressUpdateTime > 0.1 || progress == 1.0 {
+                DispatchQueue.main.async {
+                    self.downloadProgress = progress
+                    print("Download Progress for \(downloadTask.taskDescription ?? "unknown"): \(progress)")
+                }
+                self.lastProgressUpdateTime = now
+            }
+        }
+    }
+
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        guard let modelRawValue = downloadTask.taskDescription,
+              let modelType = ModelType(rawValue: modelRawValue) else {
+            DispatchQueue.main.async {
+                self.downloadingModel = nil
+            }
+            return
+        }
+
+        let destinationURL = modelsDirectory.appendingPathComponent(modelType.rawValue)
+        do {
+            // Remove existing file if it exists before moving
+            if FileManager.default.fileExists(atPath: destinationURL.path) {
+                try FileManager.default.removeItem(at: destinationURL)
+            }
+            try FileManager.default.moveItem(at: location, to: destinationURL)
+            DispatchQueue.main.async {
+                self.setupAvailableModels()
+                self.selectedModel = modelType
+                self.downloadingModel = nil
+                self.downloadProgress = 0 // Reset progress on completion
+            }
+        } catch {
+            print("Error moving downloaded file for \(modelType.rawValue): \(error)")
+            DispatchQueue.main.async {
+                self.downloadingModel = nil
+            }
+        }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error {
+            print("Download task for \(task.taskDescription ?? "unknown") completed with error: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.downloadingModel = nil
+                self.downloadProgress = 0 // Reset progress on error
+            }
         }
     }
 }

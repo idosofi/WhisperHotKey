@@ -31,7 +31,7 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(modelManager.selectedModel == modelInfo.type)
-                    } else if modelManager.downloadProgress > 0 && modelManager.downloadProgress < 1 && modelManager.selectedModel == modelInfo.type {
+                    } else if modelManager.downloadingModel == modelInfo.type {
                         ProgressView(value: modelManager.downloadProgress)
                             .frame(width: 50, height: 20) // Adjust size as needed
                         Text("\(Int(modelManager.downloadProgress * 100))%")
