@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import AVFoundation
 import Combine
-import whisper // Import the whisper framework
+import whisper
 import AppKit // For NSSound
 
 class Transcriber: ObservableObject {

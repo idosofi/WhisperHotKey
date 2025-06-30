@@ -18,7 +18,7 @@
 		B14BBD852E0D84B30046E78C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD842E0D84B30046E78C /* AppDelegate.swift */; };
 		B14BBD9E2E0FDCF00046E78C /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD9D2E0FDCF00046E78C /* ModelManager.swift */; };
 		B14BBDA02E0FDD000046E78C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14BBD9F2E0FDD000046E78C /* SettingsView.swift */; };
-		B16D1E6C2E0FE82900E22A62 /* WhisperFramework in Frameworks */ = {isa = PBXBuildFile; productRef = B16D1E6B2E0FE82900E22A62 /* WhisperFramework */; };
+		B16D1E762E12683700E22A62 /* WhisperFramework in Frameworks */ = {isa = PBXBuildFile; productRef = B16D1E752E12683700E22A62 /* WhisperFramework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B16D1E6C2E0FE82900E22A62 /* WhisperFramework in Frameworks */,
+				B16D1E762E12683700E22A62 /* WhisperFramework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,6 +89,7 @@
 				B14BBD682E0D79B00046E78C /* WhisperHotkeyTests */,
 				B14BBD722E0D79B00046E78C /* WhisperHotkeyUITests */,
 				B14BBD552E0D79AE0046E78C /* Products */,
+				B16D1E722E12673000E22A62 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -143,6 +144,13 @@
 			path = WhisperHotkeyUITests;
 			sourceTree = "<group>";
 		};
+		B16D1E722E12673000E22A62 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -160,7 +168,7 @@
 			);
 			name = WhisperHotkey;
 			packageProductDependencies = (
-				B16D1E6B2E0FE82900E22A62 /* WhisperFramework */,
+				B16D1E752E12683700E22A62 /* WhisperFramework */,
 			);
 			productName = WhisperHotkey;
 			productReference = B14BBD542E0D79AE0046E78C /* WhisperHotkey.app */;
@@ -235,7 +243,7 @@
 			);
 			mainGroup = B14BBD4B2E0D79AE0046E78C;
 			packageReferences = (
-				B16D1E6A2E0FE82900E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */,
+				B16D1E712E12652E00E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */,
 			);
 			productRefGroup = B14BBD552E0D79AE0046E78C /* Products */;
 			projectDirPath = "";
@@ -449,7 +457,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"WhisperHotkey/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = RP495WH4Z9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -477,7 +485,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"WhisperHotkey/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = RP495WH4Z9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -605,15 +613,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B16D1E6A2E0FE82900E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */ = {
+		B16D1E712E12652E00E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = WhisperHotkey/WhisperFrameworkPackage;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B16D1E6B2E0FE82900E22A62 /* WhisperFramework */ = {
+		B16D1E752E12683700E22A62 /* WhisperFramework */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = B16D1E712E12652E00E22A62 /* XCLocalSwiftPackageReference "WhisperHotkey/WhisperFrameworkPackage" */;
 			productName = WhisperFramework;
 		};
 /* End XCSwiftPackageProductDependency section */
