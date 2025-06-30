@@ -8,17 +8,41 @@ extension Notification.Name {
     static let showSettings = Notification.Name("showSettings")
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var hasShownAccessibilityAlert = false
     var keyMonitor: KeyMonitor?
     var statusItem: NSStatusItem?
     private var cancellables = Set<AnyCancellable>()
     
+    var mainWindow: NSWindow?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = ModelManager.shared // Initialize ModelManager
         setupMenuBarItem()
         
-        
+        // Set the activation policy to accessory to keep the app running in the background
+        NSApp.setActivationPolicy(.accessory)
+
+        // Create the main window
+        let hostingController = NSHostingController(rootView: ContentView().frame(width: 400, height: 300))
+        mainWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        mainWindow?.center()
+        mainWindow?.setFrameAutosaveName("MainWindow")
+        mainWindow?.contentView = hostingController.view
+        mainWindow?.delegate = self // Set the delegate
+        mainWindow?.makeKeyAndOrderFront(nil)
+        checkAccessibilityAndSetupMonitor()
+    }
+    
+    // MARK: - NSWindowDelegate
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        sender.orderOut(nil) // Hide the window
+        return false // Prevent the window from being closed and deallocated
     }
     
     private func checkAccessibilityAndSetupMonitor() {
@@ -26,11 +50,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         if trusted {
             // If trusted, set up the key monitor
-            if keyMonitor == nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.keyMonitor = KeyMonitor()
-                }
-            }
+            self.keyMonitor = KeyMonitor()
         } else {
             // If not trusted, show the alert only once per session
             if !hasShownAccessibilityAlert {
@@ -59,17 +79,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    func applicationDidBecomeActive(_ notification: Notification) {
-        // Re-check accessibility status when the app becomes active
-        // Only call checkAccessibilityAndSetupMonitor if keyMonitor is not yet set up
-        if keyMonitor == nil {
-            checkAccessibilityAndSetupMonitor()
-        }
-        
-        // Show settings window if no model is selected on app activation
-        if !ModelManager.shared.modelIsDownloaded(ModelManager.shared.selectedModel) {
-            NotificationCenter.default.post(name: .showSettings, object: nil)
-        }
+    func applicationWillTerminate(_ notification: Notification) {
+        // Insert code here to tear down your application
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return false
     }
     
     private func setupMenuBarItem() {
@@ -105,12 +120,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func showMainWindow() {
-        if let window = NSApp.windows.first(where: { $0.title != "" }) {
-            NSApp.activate(ignoringOtherApps: true)
-            window.makeKeyAndOrderFront(nil)
-            if window.isMiniaturized {
-                window.deminiaturize(nil)
-            }
+        if mainWindow == nil {
+            // Re-create the main window if it's been closed
+            let hostingController = NSHostingController(rootView: ContentView().frame(width: 400, height: 300))
+            mainWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            mainWindow?.center()
+            mainWindow?.setFrameAutosaveName("MainWindow")
+            mainWindow?.contentView = hostingController.view
+            mainWindow?.delegate = self // Set the delegate
+        }
+        
+        self.mainWindow?.setIsVisible(true)
+        NSApp.activate(ignoringOtherApps: true)
+        self.mainWindow?.makeKeyAndOrderFront(nil)
+        if self.mainWindow?.isMiniaturized ?? false {
+            self.mainWindow?.deminiaturize(nil)
         }
     }
 }
@@ -163,4 +192,6 @@ class KeyMonitor {
         }
     }
 }
+
+
 

@@ -13,11 +13,10 @@ struct WhisperHotkeyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .frame(width: 400, height: 300)
+        // The main window is managed by AppDelegate
+        Settings {
+            SettingsView()
         }
-        .windowResizability(.contentSize)
     }
 }
 
