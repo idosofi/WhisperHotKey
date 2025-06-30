@@ -55,7 +55,7 @@ class Transcriber: ObservableObject {
             }
         } else {
             DispatchQueue.main.async {
-                self.transcript = "Error: Model \(model.rawValue) is not downloaded. Please download it from settings."
+                self.transcript = "To start, please download a model from Settings."
             }
         }
     }
