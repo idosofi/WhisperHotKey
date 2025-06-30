@@ -161,7 +161,6 @@ class KeyMonitor {
     private var localMonitor: Any?
     
     init() {
-        print("KeyMonitor: Initialized")
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged, .keyDown]) { [weak self] event in
             self?.handle(event: event)
         }
@@ -196,7 +195,6 @@ class KeyMonitor {
     }
     
     deinit {
-        print("KeyMonitor: Deinitialized")
         if let globalMonitor = globalMonitor {
             NSEvent.removeMonitor(globalMonitor)
         }
