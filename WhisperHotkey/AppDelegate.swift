@@ -36,7 +36,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         mainWindow?.contentView = hostingController.view
         mainWindow?.delegate = self // Set the delegate
         mainWindow?.makeKeyAndOrderFront(nil)
-        checkAccessibilityAndSetupMonitor()
+        
+        // Initialize the key monitor once
+        self.keyMonitor = KeyMonitor()
+        
+        // Check for accessibility permissions at launch
+        checkAccessibility()
     }
     
     // MARK: - NSWindowDelegate
@@ -45,18 +50,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return false // Prevent the window from being closed and deallocated
     }
     
-    private func checkAccessibilityAndSetupMonitor() {
-        let trusted = AXIsProcessTrusted()
+    func applicationDidBecomeActive(_ notification: Notification) {
+        print("AppDelegate: applicationDidBecomeActive")
+        // Re-check accessibility status when the app becomes active
+        checkAccessibility()
         
-        if trusted {
-            // If trusted, set up the key monitor
-            self.keyMonitor = KeyMonitor()
-        } else {
-            // If not trusted, show the alert only once per session
-            if !hasShownAccessibilityAlert {
-                showAccessibilityAlert()
-                hasShownAccessibilityAlert = true
-            }
+        // Show settings window if no model is selected on app activation
+        if !ModelManager.shared.modelIsDownloaded(ModelManager.shared.selectedModel) {
+            NotificationCenter.default.post(name: .showSettings, object: nil)
+        }
+    }
+    
+    private func checkAccessibility() {
+        let trusted = AXIsProcessTrusted()
+        print("AppDelegate: checkAccessibility - trusted: \(trusted)")
+        
+        if !trusted && !hasShownAccessibilityAlert {
+            hasShownAccessibilityAlert = true
+            showAccessibilityAlert()
         }
     }
     
@@ -150,6 +161,7 @@ class KeyMonitor {
     private var localMonitor: Any?
     
     init() {
+        print("KeyMonitor: Initialized")
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged, .keyDown]) { [weak self] event in
             self?.handle(event: event)
         }
@@ -184,6 +196,7 @@ class KeyMonitor {
     }
     
     deinit {
+        print("KeyMonitor: Deinitialized")
         if let globalMonitor = globalMonitor {
             NSEvent.removeMonitor(globalMonitor)
         }
